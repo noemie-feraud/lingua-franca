@@ -1,18 +1,14 @@
-# Environment variables — NEVER commit
 .env
 
-# Google Cloud credentials — NEVER commit
 credentials/
 
-# Python
 __pycache__/
 *.pyc
 
-# Virtual environment
 venv/
 .venv/
 
-# IDE / OS
+
 .vscode/
 .idea/
 .DS_Store
