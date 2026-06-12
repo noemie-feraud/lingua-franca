@@ -1,15 +1,18 @@
-# Clé d'API — NE JAMAIS COMMIT
+# Environment variables — NEVER commit
 .env
+
+# Google Cloud credentials — NEVER commit
+credentials/
 
 # Python
 __pycache__/
 *.pyc
 
-# Environnement virtuel
+# Virtual environment
 venv/
 .venv/
 
-# IDE / système
+# IDE / OS
 .vscode/
 .idea/
 .DS_Store
