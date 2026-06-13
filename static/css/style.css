@@ -1,0 +1,312 @@
+/* =============================================================================
+   Lingua Franca — Stylesheet
+
+   Design system summary:
+   - Typography: Nunito (Google Fonts), golden-ratio scale (16 / 26 / 42 px)
+   - Spacing: Fibonacci scale (4, 8, 13, 21, 34, 55, 89 px)
+   - Palette: warm sunset tones used as backgrounds and accents only;
+     all text remains near-black for maximum contrast (WCAG AAA on every
+     colored background, ratios from 7:1 to 11:1)
+   - Layout: max content width 890 px (Fibonacci), golden-ratio proportions
+     applied to text-area aspect ratio
+   - Accessibility: EN 301 549 / WCAG 2.1 AA — visible focus, ≥44 px touch
+     targets, ≥1.5 line-height, prefers-reduced-motion honored
+   ============================================================================= */
+
+/* Google Fonts: Nunito in four weights */
+@import url("https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;900&display=swap");
+
+/* -----------------------------------------------------------------------------
+   Design tokens — single source of truth for colors, spacing, typography
+   ----------------------------------------------------------------------------- */
+:root {
+    /* Palette — warm sunset (backgrounds and accents only) */
+    --color-orange-vivid: #FA8952;
+    --color-orange-light: #FAA652;
+    --color-yellow-orange: #FABF52;
+    --color-yellow: #FAD352;
+    --color-coral: #FAA596;
+    --color-peach: #FAD3AD;
+
+    /* Text and surfaces — keep maximum contrast */
+    --color-text: #1A1A1A;
+    --color-text-muted: #5C5C5C;
+    --color-background: #FFFFFF;
+    --color-border: rgba(26, 26, 26, 0.12);
+
+    /* Typography — golden ratio scale around 16 px base */
+    --font-family: "Nunito", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    --font-size-small: 13px;
+    --font-size-body: 16px;
+    --font-size-subheading: 26px;
+    --font-size-title: 42px;
+
+    /* Spacing — Fibonacci scale */
+    --space-1: 4px;
+    --space-2: 8px;
+    --space-3: 13px;
+    --space-4: 21px;
+    --space-5: 34px;
+    --space-6: 55px;
+    --space-7: 89px;
+
+    /* Border radius — modern but not playful */
+    --radius-small: 8px;
+    --radius-medium: 12px;
+    --radius-large: 16px;
+
+    /* Animation */
+    --transition-fast: 150ms ease-out;
+    --transition-medium: 250ms ease-out;
+}
+
+/* -----------------------------------------------------------------------------
+   Reset and base
+   ----------------------------------------------------------------------------- */
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+html {
+    font-size: var(--font-size-body);
+    scroll-behavior: smooth;
+}
+
+body {
+    font-family: var(--font-family);
+    font-weight: 400;
+    font-size: var(--font-size-body);
+    line-height: 1.6;
+    color: var(--color-text);
+    background-color: var(--color-background);
+    min-height: 100vh;
+    padding: var(--space-5) var(--space-4);
+}
+
+/* Respect the user's motion preferences (WCAG 2.3.3) */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+}
+
+/* -----------------------------------------------------------------------------
+   Layout — main wrapper
+   ----------------------------------------------------------------------------- */
+header,
+main,
+footer {
+    max-width: 890px;
+    margin: 0 auto;
+}
+
+header {
+    text-align: center;
+    margin-bottom: var(--space-6);
+}
+
+h1 {
+    font-size: var(--font-size-title);
+    font-weight: 900;
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+    margin-bottom: var(--space-2);
+}
+
+header p {
+    font-size: var(--font-size-body);
+    color: var(--color-text-muted);
+    font-style: italic;
+}
+
+/* -----------------------------------------------------------------------------
+   Translation panel — two columns
+   ----------------------------------------------------------------------------- */
+.translation-panel {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-4);
+    margin-bottom: var(--space-4);
+}
+
+.translation-side {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+}
+
+label {
+    font-size: var(--font-size-small);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--color-text-muted);
+}
+
+/* -----------------------------------------------------------------------------
+   Form controls — selects, textareas, buttons
+   ----------------------------------------------------------------------------- */
+select,
+textarea {
+    font-family: inherit;
+    font-size: var(--font-size-body);
+    color: var(--color-text);
+    background-color: var(--color-background);
+    border: 2px solid var(--color-border);
+    border-radius: var(--radius-medium);
+    padding: var(--space-3);
+    width: 100%;
+    transition: border-color var(--transition-fast),
+                box-shadow var(--transition-fast);
+}
+
+/* Native select styling reset — we customize the chevron via background image */
+select {
+    min-height: 44px;
+    appearance: none;
+    -webkit-appearance: none;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231A1A1A' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right var(--space-3) center;
+    background-size: 18px;
+    padding-right: var(--space-5);
+    cursor: pointer;
+}
+
+textarea {
+    resize: vertical;
+    min-height: 235px;
+    line-height: 1.6;
+    background-color: var(--color-peach);
+}
+
+textarea[readonly] {
+    background-color: var(--color-peach);
+    opacity: 0.95;
+}
+
+/* Visible focus ring — WCAG 2.4.7 */
+select:focus,
+textarea:focus,
+button:focus {
+    outline: none;
+    border-color: var(--color-yellow-orange);
+    box-shadow: 0 0 0 3px var(--color-yellow-orange);
+}
+
+/* Hover feedback on inputs */
+select:hover,
+textarea:hover {
+    border-color: var(--color-orange-light);
+}
+
+/* -----------------------------------------------------------------------------
+   Detected language indicator
+   ----------------------------------------------------------------------------- */
+.detected-language {
+    font-size: var(--font-size-small);
+    font-weight: 600;
+    color: var(--color-text);
+    background-color: var(--color-yellow);
+    padding: var(--space-1) var(--space-3);
+    border-radius: var(--radius-small);
+    align-self: flex-start;
+    /* Hidden when empty by virtue of having no content */
+    min-height: 0;
+}
+
+.detected-language:empty {
+    display: none;
+}
+
+/* -----------------------------------------------------------------------------
+   Actions: translate button and status message
+   ----------------------------------------------------------------------------- */
+.actions {
+    display: flex;
+    align-items: center;
+    gap: var(--space-4);
+    flex-wrap: wrap;
+}
+
+button {
+    font-family: inherit;
+    font-size: var(--font-size-body);
+    font-weight: 700;
+    color: var(--color-text);
+    background-color: var(--color-orange-vivid);
+    border: 2px solid transparent;
+    border-radius: var(--radius-medium);
+    padding: var(--space-3) var(--space-5);
+    min-height: 44px;
+    cursor: pointer;
+    transition: background-color var(--transition-fast),
+                transform var(--transition-fast);
+}
+
+button:hover:not(:disabled) {
+    background-color: var(--color-orange-light);
+}
+
+button:active:not(:disabled) {
+    transform: translateY(1px);
+}
+
+button:disabled {
+    background-color: var(--color-peach);
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+#status-message {
+    font-size: var(--font-size-small);
+    color: var(--color-text-muted);
+}
+
+#status-message:not(:empty) {
+    padding: var(--space-1) var(--space-3);
+    background-color: var(--color-coral);
+    border-radius: var(--radius-small);
+    color: var(--color-text);
+}
+
+/* -----------------------------------------------------------------------------
+   Footer
+   ----------------------------------------------------------------------------- */
+footer {
+    margin-top: var(--space-6);
+    padding-top: var(--space-4);
+    border-top: 1px solid var(--color-border);
+    text-align: center;
+    font-size: var(--font-size-small);
+    color: var(--color-text-muted);
+}
+
+/* -----------------------------------------------------------------------------
+   Responsive — stack vertically on narrow screens
+   ----------------------------------------------------------------------------- */
+@media (max-width: 700px) {
+    body {
+        padding: var(--space-4) var(--space-3);
+    }
+
+    h1 {
+        font-size: var(--font-size-subheading);
+    }
+
+    .translation-panel {
+        grid-template-columns: 1fr;
+    }
+
+    textarea {
+        min-height: 180px;
+    }
+}

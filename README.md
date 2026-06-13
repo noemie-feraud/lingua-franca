@@ -6,9 +6,9 @@ and target languages from dropdowns, and read the translation in a
 right-hand output field. When the source language is unknown, an
 auto-detection feature identifies it on the fly as the user types.
 
-It demonstrates how to integrate an external AI service — Google Cloud
-Translation — into a custom Flask web application, while exposing its own
-REST API for programmatic access.
+It demonstrates how to integrate an external AI service — the MyMemory
+Translation API — into a custom Flask web application, while exposing its
+own REST API for programmatic access.
 
 ## Features
 
@@ -22,7 +22,7 @@ REST API for programmatic access.
 ## Tech stack
 
 - **Backend**: Flask (Python 3.10+)
-- **Translation service**: Google Cloud Translation API
+- **Translation service**: MyMemory Translation API (free tier, no signup)
 - **Language detection**: langdetect (local, no network call)
 - **Frontend**: Jinja templates, vanilla CSS and JavaScript
 
@@ -31,8 +31,8 @@ REST API for programmatic access.
 ### Prerequisites
 
 - Python 3.10 or higher
-- A Google Cloud Platform account with the Cloud Translation API enabled
-- A service account JSON key with the `Cloud Translation API User` role
+- Optionally, a valid email address to lift the MyMemory daily quota
+  from 5,000 characters to ~50,000 words
 
 ### Installation
 
@@ -49,13 +49,13 @@ source venv/bin/activate          # macOS / Linux
 pip install -r requirements.txt
 ```
 
-Set up credentials. Place your Google Cloud service account JSON file
-inside a `credentials/` folder at the project root (this folder is
-git-ignored). Then copy the environment template and fill in the values:
+Configure environment variables (optional). The application works out of
+the box in anonymous mode. To raise the daily quota, copy the template
+and provide an email:
 
 ```bash
 cp .env.example .env
-# Edit .env to point to your JSON file and set your project ID
+# Edit .env and set MYMEMORY_EMAIL to your email address
 ```
 
 ### Running the app
@@ -74,9 +74,10 @@ The application will be available at <http://localhost:5000>.
 ├── templates/
 │   └── index.html      Main page
 ├── static/
+│   ├── css/
+│   │   └── style.css   Stylesheet (Nunito, golden-ratio scale)
 │   └── js/
 │       └── main.js     Frontend logic (translate, detect, debounce)
-├── credentials/        Google Cloud credentials (git-ignored)
 ├── requirements.txt    Python dependencies
 ├── .env.example        Environment variables template
 └── .gitignore
@@ -108,8 +109,8 @@ Request body:
 }
 ```
 
-The `source_lang` field accepts any ISO 639-1 code or the special value
-`"auto"` for automatic detection.
+The `source_lang` and `target_lang` fields accept ISO 639-1 codes. Auto
+detection must be performed via `/detect` before calling `/translate`.
 
 Success response (200):
 
@@ -117,7 +118,8 @@ Success response (200):
 { "translation": "Hello world" }
 ```
 
-Error responses: `400` for malformed input, `500` for server errors.
+Error responses: `400` for malformed input, `502` for upstream API
+failure, `500` for unexpected server errors.
 
 ### POST /detect
 
@@ -135,15 +137,13 @@ Success response (200):
 
 Error responses: `400` for malformed input or text too short to detect.
 
-Detailed API specification is available in `docs/API.md` (coming soon).
-
 ## Project status
 
 - [x] Sprint 0 — Specification and setup
-- [x] Sprint 1 — Core translation function (mocked, awaiting Google Cloud key)
+- [x] Sprint 1 — Core translation function
 - [x] Sprint 2 — Basic web interface
 - [x] Sprint 3 — Dynamic language detection
-- [ ] Sprint 4 — Visual identity and styling
+- [x] Sprint 4 — Visual identity and styling
 - [ ] Sprint 5 — Polish and delivery
 
 ## Authors

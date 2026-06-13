@@ -1,5 +1,6 @@
 import os
 
+import requests
 from flask import Flask, jsonify, render_template, request
 from dotenv import load_dotenv
 from langdetect import detect, DetectorFactory, LangDetectException
@@ -11,7 +12,8 @@ DetectorFactory.seed = 0
 # Load environment variables from .env (located at the project root)
 load_dotenv()
 
-GOOGLE_CLOUD_PROJECT = os.getenv("GOOGLE_CLOUD_PROJECT")
+MYMEMORY_API_URL = "https://api.mymemory.translated.net/get"
+MYMEMORY_EMAIL = os.getenv("MYMEMORY_EMAIL", "")
 
 app = Flask(__name__)
 
@@ -20,14 +22,35 @@ app = Flask(__name__)
 
 def translate_text(text: str, source_lang: str, target_lang: str) -> str:
     """
-    Translate `text` from `source_lang` to `target_lang` via Google Cloud
+    Translate `text` from `source_lang` to `target_lang` via the MyMemory
     Translation API.
-
-    TODO sprint 1: replace this mock with a real Google Cloud Translation call.
     """
-    # Temporary mock implementation — lets the UI work end-to-end before
-    # the Google API key is available.
-    return f"[MOCK {source_lang} -> {target_lang}] {text}"
+    if source_lang == "auto":
+        raise ValueError(
+            "MyMemory requires an explicit source language. "
+            "Detect it client-side first, then call this function."
+        )
+
+    params = {
+        "q": text,
+        "langpair": f"{source_lang}|{target_lang}",
+    }
+    if MYMEMORY_EMAIL:
+        params["de"] = MYMEMORY_EMAIL
+
+    response = requests.get(MYMEMORY_API_URL, params=params, timeout=10)
+    response.raise_for_status()
+
+    data = response.json()
+
+    # MyMemory may return HTTP 200 with a logical error in the payload.
+    # The status field is sometimes returned as int, sometimes as string.
+    status = int(data.get("responseStatus", 0))
+    if status != 200:
+        details = data.get("responseDetails", "unknown error")
+        raise RuntimeError(f"MyMemory rejected the request: {details}")
+
+    return data["responseData"]["translatedText"]
 
 
 def detect_language(text: str) -> str:
@@ -64,13 +87,18 @@ def translate():
         return jsonify({"error": "Field 'source_lang' is required"}), 400
     if not target_lang:
         return jsonify({"error": "Field 'target_lang' is required"}), 400
+    if source_lang == "auto":
+        return jsonify({"error": "Source language must be detected before translating"}), 400
 
     try:
         translation = translate_text(text, source_lang, target_lang)
+    except requests.RequestException as exc:
+        return jsonify({"error": f"Translation service unavailable: {exc}"}), 502
+    except RuntimeError as exc:
+        return jsonify({"error": str(exc)}), 502
     except Exception as exc:
         # Catch-all to avoid leaking stack traces to the client.
-        # Will be refined in sprint 5 (error handling).
-        return jsonify({"error": f"Translation failed: {exc}"}), 500
+        return jsonify({"error": f"Unexpected error: {exc}"}), 500
 
     return jsonify({"translation": translation}), 200
 

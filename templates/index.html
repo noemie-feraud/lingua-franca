@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Lingua Franca — Translator</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
     <header>
@@ -42,7 +43,7 @@
                     <textarea
                         id="source-text"
                         name="source-text"
-                        rows="10"
+                        rows="8"
                         placeholder="Type your text here..."
                         autofocus
                     ></textarea>
@@ -69,7 +70,7 @@
                     <textarea
                         id="target-text"
                         name="target-text"
-                        rows="10"
+                        rows="8"
                         placeholder="Translation will appear here..."
                         readonly
                     ></textarea>
@@ -84,7 +85,7 @@
     </main>
 
     <footer>
-        <p>An educational project, made by: Assmine AHAMADA; Antuat ABDALLAH; Noémie FERAUD</p>
+        <p>An educational project, made by: Assmine AHAMADA, Antuat ABDALLAH and Noémie FERAUD</p>
     </footer>
 
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
