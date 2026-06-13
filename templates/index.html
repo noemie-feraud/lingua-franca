@@ -1,11 +1,86 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Traducteur multilingue</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lingua Franca — Translator</title>
 </head>
 <body>
-    <h1>Traducteur multilingue</h1>
-    <p>Application en cours de développement. Setup terminé.</p>
+    <header>
+        <h1>Lingua Franca</h1>
+        <p>The past, the present and the future walked into a bar. It was tense.</p>
+    </header>
+
+    <main>
+        <form id="translation-form">
+            <div class="translation-panel">
+                <div class="translation-side">
+                    <label for="source-lang">Source language</label>
+                    <select id="source-lang" name="source-lang">
+                        <option value="auto" selected>Auto-detect</option>
+                        <option value="fr">French</option>
+                        <option value="en">English</option>
+                        <option value="es">Spanish</option>
+                        <option value="de">German</option>
+                        <option value="it">Italian</option>
+                        <option value="pt">Portuguese</option>
+                        <option value="nl">Dutch</option>
+                        <option value="pl">Polish</option>
+                        <option value="ru">Russian</option>
+                        <option value="ja">Japanese</option>
+                        <option value="zh">Chinese</option>
+                        <option value="ar">Arabic</option>
+                    </select>
+
+                    <label for="source-text">Text to translate</label>
+                    <textarea
+                        id="source-text"
+                        name="source-text"
+                        rows="10"
+                        placeholder="Type your text here..."
+                        autofocus
+                    ></textarea>
+                </div>
+
+                <div class="translation-side">
+                    <label for="target-lang">Target language</label>
+                    <select id="target-lang" name="target-lang">
+                        <option value="en" selected>English</option>
+                        <option value="fr">French</option>
+                        <option value="es">Spanish</option>
+                        <option value="de">German</option>
+                        <option value="it">Italian</option>
+                        <option value="pt">Portuguese</option>
+                        <option value="nl">Dutch</option>
+                        <option value="pl">Polish</option>
+                        <option value="ru">Russian</option>
+                        <option value="ja">Japanese</option>
+                        <option value="zh">Chinese</option>
+                        <option value="ar">Arabic</option>
+                    </select>
+
+                    <label for="target-text">Translation</label>
+                    <textarea
+                        id="target-text"
+                        name="target-text"
+                        rows="10"
+                        placeholder="Translation will appear here..."
+                        readonly
+                    ></textarea>
+                </div>
+            </div>
+
+            <div class="actions">
+                <button type="submit" id="translate-button">Translate</button>
+                <p id="status-message" role="status" aria-live="polite"></p>
+            </div>
+        </form>
+    </main>
+
+    <footer>
+        <p>An educational project, made by : Assmine AHAMADA; Antuat ABDALLAH; Noémie FERAUD</p>
+    </footer>
+
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
 </body>
 </html>
