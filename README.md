@@ -4,11 +4,20 @@ Lingua Franca is a web application that lets users translate text between
 many languages. Users type text in a left-hand input field, choose source
 and target languages from dropdowns, and read the translation in a
 right-hand output field. When the source language is unknown, an
-auto-detection feature identifies it on the fly.
+auto-detection feature identifies it on the fly as the user types.
 
-It demonstrates how to integrate an external AI service "Google Cloud
-Translation" into a custom Flask web application, while exposing its own
+It demonstrates how to integrate an external AI service — Google Cloud
+Translation — into a custom Flask web application, while exposing its own
 REST API for programmatic access.
+
+## Features
+
+- Translate text between 12 languages: French, English, Spanish, German,
+  Italian, Portuguese, Dutch, Polish, Russian, Japanese, Chinese, Arabic
+- Auto-detect the source language while the user types (with a 500 ms
+  debounce to avoid hammering the server)
+- Display the detected language in real time
+- Expose all translation features as a REST API consumable by any HTTP client
 
 ## Tech stack
 
@@ -30,7 +39,7 @@ REST API for programmatic access.
 Clone the repository and create a virtual environment:
 
 ```bash
-git clone https://github.com/<your-username>/lingua-franca.git
+git clone https://github.com/noemie-feraud/lingua-franca.git
 cd lingua-franca
 
 python -m venv venv
@@ -64,6 +73,9 @@ The application will be available at <http://localhost:5000>.
 ├── app.py              Flask application (routes + business logic)
 ├── templates/
 │   └── index.html      Main page
+├── static/
+│   └── js/
+│       └── main.js     Frontend logic (translate, detect, debounce)
 ├── credentials/        Google Cloud credentials (git-ignored)
 ├── requirements.txt    Python dependencies
 ├── .env.example        Environment variables template
@@ -84,15 +96,61 @@ programmatically by any HTTP client (not only the bundled web UI).
 | POST   | `/translate` | Translate text between two languages       |
 | POST   | `/detect`    | Detect the language of a given text        |
 
-Detailed request and response formats are documented in `docs/API.md`
-(coming soon).
+### POST /translate
+
+Request body:
+
+```json
+{
+  "text": "Bonjour le monde",
+  "source_lang": "fr",
+  "target_lang": "en"
+}
+```
+
+The `source_lang` field accepts any ISO 639-1 code or the special value
+`"auto"` for automatic detection.
+
+Success response (200):
+
+```json
+{ "translation": "Hello world" }
+```
+
+Error responses: `400` for malformed input, `500` for server errors.
+
+### POST /detect
+
+Request body:
+
+```json
+{ "text": "Bonjour le monde" }
+```
+
+Success response (200):
+
+```json
+{ "language": "fr" }
+```
+
+Error responses: `400` for malformed input or text too short to detect.
+
+Detailed API specification is available in `docs/API.md` (coming soon).
 
 ## Project status
 
 - [x] Sprint 0 — Specification and setup
-- [ ] Sprint 1 — Core translation function
-- [ ] Sprint 2 — Basic web interface
-- [ ] Sprint 3 — Dynamic language detection
+- [x] Sprint 1 — Core translation function (mocked, awaiting Google Cloud key)
+- [x] Sprint 2 — Basic web interface
+- [x] Sprint 3 — Dynamic language detection
 - [ ] Sprint 4 — Visual identity and styling
 - [ ] Sprint 5 — Polish and delivery
+
+## Authors
+
+This project was made by:
+
+- Assmine AHAMADA
+- Antuat ABDALLAH
+- Noémie FERAUD
 
