@@ -1,3 +1,13 @@
+/**
+ * Lingua Franca — frontend logic.
+ *
+ * Responsibilities:
+ *  - On "Translate" click, POST the form to /translate and display the result.
+ *  - While the user is typing in auto-detect mode, debounce calls to /detect
+ *    and reflect the detected language directly inside the auto-detect
+ *    option label (e.g. "Auto-detect (French)").
+ */
+
 (function () {
     "use strict";
 
@@ -8,7 +18,8 @@
     const targetText = document.getElementById("target-text");
     const translateButton = document.getElementById("translate-button");
     const statusMessage = document.getElementById("status-message");
-    const detectedLanguage = document.getElementById("detected-language");
+    const autoOption = sourceLang.querySelector('option[value="auto"]');
+    const autoBaseLabel = autoOption.dataset.baseLabel || "Auto-detect";
 
     // Delay (ms) after the last keystroke before triggering detection.
     // Keeps the server from being hit on every single character typed.
@@ -22,8 +33,7 @@
     let detectionTimer = null;
 
     /**
-     * Map of ISO 639-1 codes to display names. Only used to show a
-     * friendly label in the "Detected language" indicator.
+     * Map of ISO 639-1 codes to display names.
      */
     const LANGUAGE_NAMES = {
         fr: "French", en: "English", es: "Spanish", de: "German",
@@ -32,27 +42,29 @@
     };
 
     /**
-     * Display the detected language in the UI. Falls back to the raw
-     * code if the language is not in our friendly-name map.
+     * Reflect the detected language directly in the auto-detect option,
+     * e.g. "Auto-detect (French)". The closed selector immediately shows
+     * the updated text since auto is the active option.
      */
     function showDetectedLanguage(code) {
         const name = LANGUAGE_NAMES[code] || code;
-        detectedLanguage.textContent = `Detected: ${name}`;
+        autoOption.textContent = `${autoBaseLabel} (${name})`;
     }
 
     /**
-     * Clear the detected-language indicator (used when the user
-     * switches away from auto-detect or empties the text field).
+     * Restore the auto-detect option to its base label (used when the
+     * user empties the text field or switches away from auto-detect).
      */
     function clearDetectedLanguage() {
-        detectedLanguage.textContent = "";
+        autoOption.textContent = autoBaseLabel;
         lastDetectedLang = null;
     }
 
     /**
-     * Call the /detect endpoint with the current text. Updates the UI
-     * with the detected language, or silently does nothing on error
-     * (detection failures during typing are expected on short inputs).
+     * Call the /detect endpoint with the current text. Updates the auto
+     * option label with the detected language, or silently does nothing
+     * on error (detection failures during typing are expected on short
+     * inputs).
      */
     async function detectLanguage() {
         const text = sourceText.value.trim();
@@ -151,8 +163,8 @@
         detectionTimer = setTimeout(detectLanguage, DETECTION_DEBOUNCE_MS);
     });
 
-    // Clear the detected indicator when the user switches away from
-    // auto-detect (no longer relevant).
+    // Restore or refresh the auto-detect label when the user switches
+    // language manually.
     sourceLang.addEventListener("change", function () {
         if (sourceLang.value === "auto") {
             // Switched back to auto: re-run detection on current text.

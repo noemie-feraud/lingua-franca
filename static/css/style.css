@@ -209,25 +209,6 @@ textarea:hover {
 }
 
 /* -----------------------------------------------------------------------------
-   Detected language indicator
-   ----------------------------------------------------------------------------- */
-.detected-language {
-    font-size: var(--font-size-small);
-    font-weight: 600;
-    color: var(--color-text);
-    background-color: var(--color-yellow);
-    padding: var(--space-1) var(--space-3);
-    border-radius: var(--radius-small);
-    align-self: flex-start;
-    /* Hidden when empty by virtue of having no content */
-    min-height: 0;
-}
-
-.detected-language:empty {
-    display: none;
-}
-
-/* -----------------------------------------------------------------------------
    Actions: translate button and status message
    ----------------------------------------------------------------------------- */
 .actions {
