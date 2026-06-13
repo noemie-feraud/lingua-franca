@@ -1,13 +1,3 @@
-/**
- * Lingua Franca — frontend logic.
- *
- * Responsibilities:
- *  - On "Translate" click, POST the form to /translate and display the result.
- *  - While the user is typing in auto-detect mode, debounce calls to /detect
- *    and reflect the detected language directly inside the auto-detect
- *    option label (e.g. "Auto-detect (French)").
- */
-
 (function () {
     "use strict";
 
@@ -86,6 +76,12 @@
             }
 
             const data = await response.json();
+            if (data.language === null) {
+                // Detection was uncertain even after the server-side
+                // fallback — keep the auto-detect option neutral.
+                clearDetectedLanguage();
+                return;
+            }
             lastDetectedLang = data.language;
             showDetectedLanguage(data.language);
         } catch (err) {
@@ -148,9 +144,8 @@
         }
     }
 
-    // -------------------------------------------------------------------
+
     // Event listeners
-    // -------------------------------------------------------------------
 
     // Debounced detection on every keystroke. Only runs when the user
     // has the source language set to "auto" — otherwise there is

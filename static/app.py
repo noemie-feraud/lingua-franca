@@ -15,6 +15,18 @@ load_dotenv()
 MYMEMORY_API_URL = "https://api.mymemory.translated.net/get"
 MYMEMORY_EMAIL = os.getenv("MYMEMORY_EMAIL", "")
 
+# Languages our application supports in the UI. Detection results outside
+# this set trigger the MyMemory autodetect fallback.
+SUPPORTED_LANGUAGES = {
+    "fr", "en", "es", "de", "it", "pt",
+    "nl", "pl", "ru", "ja", "zh", "ar",
+}
+
+# Below this character count, langdetect is unreliable. We bypass it and
+# go straight to the MyMemory fallback if the text has at least a few
+# meaningful characters.
+LANGDETECT_MIN_LENGTH = 20
+
 app = Flask(__name__)
 
 
@@ -23,7 +35,7 @@ app = Flask(__name__)
 def translate_text(text: str, source_lang: str, target_lang: str) -> str:
     """
     Translate `text` from `source_lang` to `target_lang` via the MyMemory
-    Translation API.
+    Translation API
     """
     if source_lang == "auto":
         raise ValueError(
@@ -43,8 +55,6 @@ def translate_text(text: str, source_lang: str, target_lang: str) -> str:
 
     data = response.json()
 
-    # MyMemory may return HTTP 200 with a logical error in the payload.
-    # The status field is sometimes returned as int, sometimes as string.
     status = int(data.get("responseStatus", 0))
     if status != 200:
         details = data.get("responseDetails", "unknown error")
@@ -53,11 +63,72 @@ def translate_text(text: str, source_lang: str, target_lang: str) -> str:
     return data["responseData"]["translatedText"]
 
 
-def detect_language(text: str) -> str:
+def detect_with_langdetect(text: str) -> str | None:
     """
-    Detect the language of `text` using the local langdetect library.
+    Try to detect the language using the local langdetect library
     """
-    return detect(text)
+    if len(text) < LANGDETECT_MIN_LENGTH:
+        return None
+    try:
+        code = detect(text)
+    except LangDetectException:
+        return None
+    if code not in SUPPORTED_LANGUAGES:
+        return None
+    return code
+
+
+def detect_with_mymemory(text: str) -> str | None:
+    """
+    Fall back to MyMemory's autodetect feature. We ask MyMemory to
+    translate `text` from 'autodetect' to English; the JSON response
+    includes the detected source language even though we discard the
+    translation itself.
+    """
+    params = {
+        "q": text,
+        "langpair": "autodetect|en",
+    }
+    if MYMEMORY_EMAIL:
+        params["de"] = MYMEMORY_EMAIL
+
+    try:
+        response = requests.get(MYMEMORY_API_URL, params=params, timeout=10)
+        response.raise_for_status()
+    except requests.RequestException:
+        return None
+
+    data = response.json()
+    if int(data.get("responseStatus", 0)) != 200:
+        return None
+
+    # MyMemory returns the detected source language in responseData.
+    # The field may also appear under matches[0].source for some responses.
+    detected = data.get("responseData", {}).get("detectedLanguage")
+    if not detected:
+        matches = data.get("matches") or []
+        if matches:
+            detected = matches[0].get("source")
+
+    if not detected:
+        return None
+
+    # MyMemory returns codes like 'fr-FR' or 'en-GB'; we only keep the
+    # primary subtag.
+    primary = detected.split("-")[0].lower()
+    if primary not in SUPPORTED_LANGUAGES:
+        return None
+    return primary
+
+
+def detect_language(text: str) -> str | None:
+    """
+    Detect the language of `text` using a two-stage cascade.
+    """
+    local = detect_with_langdetect(text)
+    if local is not None:
+        return local
+    return detect_with_mymemory(text)
 
 
 # Routes
@@ -97,7 +168,6 @@ def translate():
     except RuntimeError as exc:
         return jsonify({"error": str(exc)}), 502
     except Exception as exc:
-        # Catch-all to avoid leaking stack traces to the client.
         return jsonify({"error": f"Unexpected error: {exc}"}), 500
 
     return jsonify({"translation": translation}), 200
@@ -106,7 +176,7 @@ def translate():
 @app.route("/detect", methods=["POST"])
 def detect_route():
     """
-    Detect the language of a given text.
+    Detect the language of a given text using the two-stage cascade.
     """
     payload = request.get_json(silent=True)
     if not payload:
@@ -116,11 +186,7 @@ def detect_route():
     if not text or not isinstance(text, str):
         return jsonify({"error": "Field 'text' is required and must be a string"}), 400
 
-    try:
-        language = detect_language(text)
-    except LangDetectException:
-        return jsonify({"error": "Could not detect language (text too short or ambiguous)"}), 400
-
+    language = detect_language(text)
     return jsonify({"language": language}), 200
 
 
