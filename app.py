@@ -2,6 +2,11 @@ import os
 
 from flask import Flask, jsonify, render_template, request
 from dotenv import load_dotenv
+from langdetect import detect, DetectorFactory, LangDetectException
+
+# Make langdetect deterministic so the same input always gives the same
+# output. Without this, results may vary slightly between calls.
+DetectorFactory.seed = 0
 
 # Load environment variables from .env (located at the project root)
 load_dotenv()
@@ -29,7 +34,7 @@ def detect_language(text: str) -> str:
     """
     Detect the language of `text` using the local langdetect library.
     """
-    raise NotImplementedError("To be implemented in sprint 3")
+    return detect(text)
 
 
 # Routes
@@ -71,14 +76,24 @@ def translate():
 
 
 @app.route("/detect", methods=["POST"])
-def detect():
+def detect_route():
     """
     Detect the language of a given text.
-
-    Expected JSON body:
-        { "text": "..." }
     """
-    return jsonify({"error": "Endpoint to be implemented in sprint 3"}), 501
+    payload = request.get_json(silent=True)
+    if not payload:
+        return jsonify({"error": "Request body must be valid JSON"}), 400
+
+    text = payload.get("text")
+    if not text or not isinstance(text, str):
+        return jsonify({"error": "Field 'text' is required and must be a string"}), 400
+
+    try:
+        language = detect_language(text)
+    except LangDetectException:
+        return jsonify({"error": "Could not detect language (text too short or ambiguous)"}), 400
+
+    return jsonify({"language": language}), 200
 
 
 if __name__ == "__main__":
