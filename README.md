@@ -1,14 +1,11 @@
 # Lingua Franca
 
-> *The past, the present and the future walked into a bar. It was tense.*
-
 Lingua Franca is a web application that lets users translate text between
 many languages. Users type text in a left-hand input field, choose source
 and target languages from dropdowns, and read the translation in a
 right-hand output field. When the source language is unknown, an
 auto-detection feature identifies it on the fly as the user types.
 
-The project is built as part of an educational assignment at La Plateforme.
 It demonstrates how to integrate an external AI service — the MyMemory
 Translation API — into a custom Flask web application, while exposing its
 own REST API for programmatic access.
@@ -162,6 +159,3 @@ This project was made by:
 - Antuat ABDALLAH
 - Noémie FERAUD
 
-## License
-
-Educational project — no public license at this stage.
